@@ -15,6 +15,16 @@ our $VERSION = '9999';
 
 register_function_hooks { before_change => { file => \&show_diff, }, };
 
+my %OPTS;
+
+sub import {
+    my ( $class, %opts ) = @_;
+    if ( exists $opts{extra_command_option} ) {
+        $OPTS{extra_command_option} = $opts{extra_command_option};
+    }
+    return;
+}
+
 sub show_diff {
     my ( $original_file, @opts ) = @_;
 
@@ -23,7 +33,11 @@ sub show_diff {
     state $managing_windows = is_windows();
 
     if ( !$managing_windows && $diff_command ) {
-        my $command = join q( ), $diff_command, '-u', involved_files($original_file);
+        my $command = join q( ),
+          $diff_command,
+          '-u',
+          exists $OPTS{extra_command_option} ? $OPTS{extra_command_option} : (),
+          involved_files($original_file);
 
         if ( $diff = i_run $command, fail_ok => TRUE ) {
             $diff .= "\n";
@@ -66,6 +80,7 @@ __END__
 =head1 SYNOPSIS
 
     use Rex::Hook::File::Diff;
+    use Rex::Hook::File::Diff extra_command_option => '--color=always';
 
 =head1 DESCRIPTION
 
@@ -87,7 +102,7 @@ This module allows L<Rex> to show a diff of changes for the files managed via it
 
 =back
 
-It prefers to use the C<diff> utility on non-Windows managed endpoints, if available.
+It prefers to use the C<diff> utility on non-Windows managed endpoints, if available. You can use the C<extra_command_option> import argument to specify an extra argument to pass to the command.
 
 =head1 DIAGNOSTICS
 

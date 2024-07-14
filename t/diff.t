@@ -7,6 +7,7 @@ use re '/msx';
 use English qw( -no_match_vars );
 use File::Basename;
 use File::Temp;
+use Rex::Commands::Run qw( can_run );
 use Rex::Commands::File 1.012;
 use Rex::Hook::File::Diff;
 use Test2::V0 0.000071;
@@ -14,7 +15,7 @@ use Test::Output 0.03;
 
 our $VERSION = '9999';
 
-plan tests => 3;
+plan tests => 4;
 
 my $null = File::Spec->devnull();
 
@@ -234,6 +235,38 @@ subtest 'file command with source option' => sub {
     );
 
     run_tests(@tests);
+};
+
+subtest 'extra command' => sub {
+  SKIP: {
+        if ( !can_run('diff') ) {
+            skip('No external command');
+        }
+        my $file  = File::Temp->new( TEMPLATE => "$PROGRAM_NAME.XXXX" )->filename();
+        my @tests = (
+            {
+                scenario => 'create file',
+                coderef  => sub {
+                    file $file, content => '1';
+                },
+                expected_output => qr{\+1},
+            },
+            {
+                scenario => 'modify file',
+                coderef  => sub {
+                    Rex::Hook::File::Diff->import( extra_command_option => '-b' );
+                    file $file, content => '1 ';
+                },
+                expected_output => qr{\A\Z}, # Whitespace changes ignored because of -b.
+            },
+            {
+                scenario        => 'remove file',
+                coderef         => sub { file $file, ensure => 'absent' },
+                expected_output => qr{.},
+            },
+        );
+        run_tests(@tests);
+    }
 };
 
 sub run_tests {
