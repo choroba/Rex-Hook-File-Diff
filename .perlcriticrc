@@ -10,7 +10,8 @@ script_sections = USAGE | DESCRIPTION | REQUIRED ARGUMENTS | OPTIONS | DIAGNOSTI
 [Subroutines::ProhibitUnusedPrivateSubroutines]
 skip_when_using = Moo::Role
 
-[-TooMuchCode::ProhibitDuplicateLiteral]
+[TooMuchCode::ProhibitDuplicateLiteral]
+allowlist = 'absent'
 
 [TestingAndDebugging::RequireUseStrict]
 equivalent_modules = Test2::V0
