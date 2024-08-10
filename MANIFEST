@@ -22,4 +22,5 @@ xt/author/00-compile.t
 xt/author/critic.t
 xt/author/perltidy.t
 xt/author/pod-syntax.t
+xt/release/check-manifest.t
 xt/release/kwalitee.t
